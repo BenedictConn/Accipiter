@@ -1,8 +1,10 @@
 CC = gcc
-CLAGS = -Wall -Wextra -g
+CLAGS = -Wall -Wextra -g 
+LDFLAGS = -mwindows
+LDLIBS = -lgdi32
 
 Accipiter: Accipiter.c
-	$(CC) $(CFLAGS) Accipiter.c -o Accipiter
+	$(CC) $(CFLAGS) $(LDFLAGS) Accipiter.c -o Accipiter $(LDLIBS)
 
 clean:
 	rm -f Accipiter
