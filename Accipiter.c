@@ -4,8 +4,9 @@
 #define ID_BUTTON 1
 #define ID_LOG    2
 #define ID_LOG2    3
+#define ID_DRAWING    4
 
-static HWND hButton, hLog, hLog2;
+static HWND hButton, hLog, hLog2, hDrawing;
 static int  clickCount = 0;
 
 static void Log_Append(const char *text) {
@@ -34,6 +35,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             ES_MULTILINE | ES_AUTOVSCROLL,
             10, 48, 300, 75, hwnd, (HMENU)ID_LOG2, hInst, NULL);
 
+        hDrawing = CreateWindowExA(
+            0, "DRAWINGAREA", "",
+            WS_CHILD | WS_VISIBLE,
+            10, 48, 300, 75,
+            hwnd, (HMENU)ID_DRAWING, hInst, NULL);
+
         SendMessageA(hButton, WM_SETFONT, (WPARAM)font, TRUE);
         SendMessageA(hLog,    WM_SETFONT, (WPARAM)font, TRUE);
         return 0;
@@ -43,13 +50,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         int vx = LOWORD(lParam);
         int vy = HIWORD(lParam);
         int w = (vx - 10);
-        int h = (vy - 58) / 2;
+        int h = (vy - 58) / 3;
 
         if (w > 0 && h > 0)
+            // if (hLog)
+            //     MoveWindow(hLog, 10, 48, w, h, TRUE);
+            // if (hLog2)
+            //     MoveWindow(hLog2, 10, 48 + h + 10, w, h, TRUE);
+            // if (hDrawing)
+            //     MoveWindow(hLog2, 10, 48 + 2 * h + 20, w, h, TRUE);
             if (hLog)
-                MoveWindow(hLog, 10, 48, w, h, TRUE);
+                MoveWindow(hLog, 10, 48, w, 10, TRUE);
             if (hLog2)
-                MoveWindow(hLog2, 10, 48 + h + 10, w, h, TRUE);
+                MoveWindow(hLog2, 10, 48 + 10, w, 10, TRUE);
+            if (hDrawing)
+                MoveWindow(hDrawing, 10, 48 + 20, w, h, TRUE);
         return 0;
     }
 
@@ -69,6 +84,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
 
+LRESULT CALLBACK DrawingProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+
+        MoveToEx(hdc, 10, 70, NULL);
+        LineTo(hdc, 200, 50);
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    }
+
+    return DefWindowProcA(hwnd, msg, wParam, lParam);
+}
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show) {
     static const char CLASS_NAME[] = "MainWindowClass";
 
@@ -81,6 +114,18 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show) {
 
     if (!RegisterClassA(&wc)) {
         MessageBoxA(NULL, "RegisterClass failed", "Error", MB_ICONERROR);
+        return 1;
+    }
+
+    WNDCLASSA drawingClass = {0};
+    drawingClass.lpfnWndProc = DrawingProc;
+    drawingClass.hInstance = hInst;
+    drawingClass.lpszClassName = "DRAWINGAREA";
+    drawingClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    drawingClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+
+    if (!RegisterClassA(&drawingClass)) {
+        MessageBoxA(NULL, "Drawing class registration failed", "Error", MB_ICONERROR);
         return 1;
     }
 
