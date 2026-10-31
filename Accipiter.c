@@ -1,19 +1,9 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define ID_BUTTON 1
-#define ID_LOG    2
-#define ID_LOG2    3
-#define ID_DRAWING    4
+#define ID_DRAWING    1
 
-static HWND hButton, hLog, hLog2, hDrawing;
-static int  clickCount = 0;
-
-static void Log_Append(const char *text) {
-    int len = GetWindowTextLengthA(hLog);
-    SendMessageA(hLog, EM_SETSEL, len, len);
-    SendMessageA(hLog, EM_REPLACESEL, FALSE, (LPARAM)text);
-}
+static HWND hDrawing;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -21,61 +11,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         HINSTANCE hInst = ((CREATESTRUCT *)lParam)->hInstance;
         HFONT font = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
-        hButton = CreateWindowA("BUTTON", "Add line",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            10, 10, 100, 28, hwnd, (HMENU)ID_BUTTON, hInst, NULL);
-
-        hLog = CreateWindowExA(0, "EDIT", "",
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-            ES_MULTILINE | ES_AUTOVSCROLL,
-            10, 48, 300, 75, hwnd, (HMENU)ID_LOG, hInst, NULL);
-        
-        hLog2 = CreateWindowExA(0, "EDIT", "",
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-            ES_MULTILINE | ES_AUTOVSCROLL,
-            10, 48, 300, 75, hwnd, (HMENU)ID_LOG2, hInst, NULL);
-
         hDrawing = CreateWindowExA(
             0, "DRAWINGAREA", "",
             WS_CHILD | WS_VISIBLE,
             10, 48, 300, 75,
             hwnd, (HMENU)ID_DRAWING, hInst, NULL);
 
-        SendMessageA(hButton, WM_SETFONT, (WPARAM)font, TRUE);
-        SendMessageA(hLog,    WM_SETFONT, (WPARAM)font, TRUE);
         return 0;
     }
 
     case WM_SIZE: {
         int vx = LOWORD(lParam);
         int vy = HIWORD(lParam);
-        int w = (vx - 10);
-        int h = (vy - 58) / 3;
+        // int w = (vx - 10);
+        // int h = (vy - 58) / 3;
 
-        if (w > 0 && h > 0)
+        if (vx > 0 && vy > 0)
             // if (hLog)
             //     MoveWindow(hLog, 10, 48, w, h, TRUE);
             // if (hLog2)
             //     MoveWindow(hLog2, 10, 48 + h + 10, w, h, TRUE);
             // if (hDrawing)
             //     MoveWindow(hLog2, 10, 48 + 2 * h + 20, w, h, TRUE);
-            if (hLog)
-                MoveWindow(hLog, 10, 48, w, 10, TRUE);
-            if (hLog2)
-                MoveWindow(hLog2, 10, 48 + 10, w, 10, TRUE);
+
+            // 
+
             if (hDrawing)
-                MoveWindow(hDrawing, 10, 48 + 20, w, h, TRUE);
+                MoveWindow(hDrawing, 0, 0, vx, vy, TRUE); // figure out if I can pass the vx, vy variables into different scripts (calculate unit) 
         return 0;
     }
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == ID_BUTTON && HIWORD(wParam) == BN_CLICKED) {
-            char line[64];
-            clickCount++;
-            snprintf(line, sizeof(line), "Button clicked (%d)\r\n", clickCount);
-            Log_Append(line);
-        }
-        return 0;
 
     case WM_DESTROY:
         PostQuitMessage(0);
