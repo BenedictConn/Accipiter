@@ -1,7 +1,11 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include "draw.h"
+
 #define ID_DRAWING    1
+
+int DrawLine(HDC hdc, LINE line);
 
 static HWND hDrawing;
 
@@ -55,8 +59,14 @@ LRESULT CALLBACK DrawingProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
-        MoveToEx(hdc, 10, 70, NULL);
-        LineTo(hdc, 200, 50);
+        // MoveToEx(hdc, 10, 70, NULL);
+        // LineTo(hdc, 200, 50);
+        LINE line = {
+            .start = {10, 10},
+            .end = {200, 200},
+            .colour = RGB(255, 0, 0)
+        };
+        DrawLine(hdc, line);
 
         EndPaint(hwnd, &ps);
         return 0;
@@ -112,4 +122,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show) {
         DispatchMessage(&m);
     }
     return (int)m.wParam;
+}
+
+int DrawLine(HDC hdc, LINE line){
+    MoveToEx(hdc, line.start.x, line.start.y, NULL);
+    LineTo(hdc, line.end.x, line.end.y);
 }
