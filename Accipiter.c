@@ -64,8 +64,10 @@ LRESULT CALLBACK DrawingProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         LINE line = {
             .start = {10, 10},
             .end = {200, 200},
-            .colour = RGB(255, 0, 0)
+            .colour = RGB(255, 0, 0),
+            .thickness = 4
         };
+
         DrawLine(hdc, line);
 
         EndPaint(hwnd, &ps);
@@ -125,6 +127,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show) {
 }
 
 int DrawLine(HDC hdc, LINE line){
+    HPEN pen = CreatePen(PS_SOLID, line.thickness, line.colour);
+
+    HGDIOBJ oldPen = SelectObject(hdc, pen);
+
     MoveToEx(hdc, line.start.x, line.start.y, NULL);
     LineTo(hdc, line.end.x, line.end.y);
+
+    SelectObject(hdc, oldPen);
+    DeleteObject(pen);
 }

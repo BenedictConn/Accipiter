@@ -7,6 +7,7 @@ typedef struct {
     POINT start;
     POINT end;
     COLORREF colour;
+    int thickness;
 } LINE;
 
 
